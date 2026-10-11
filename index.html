@@ -7,12 +7,14 @@
 <script>
 // Always open the newest build: ask version.json (bypassing caches) and load that exact version.
 (async function () {
-  let url = "family-tree-index.html";
+  // keep any other parameters, e.g. ?start=X60 (who the tree starts from)
+  const qs = new URLSearchParams(location.search);
   try {
     const r = await fetch("version.json?t=" + Date.now(), {cache: "no-store"});
-    if (r.ok) { const v = (await r.json()).build; if (v) url += "?v=" + encodeURIComponent(v); }
+    if (r.ok) { const v = (await r.json()).build; if (v) qs.set("v", v); }
   } catch (e) {}
-  location.replace(url + location.hash);
+  const s = qs.toString();
+  location.replace("family-tree-index.html" + (s ? "?" + s : "") + location.hash);
 })();
 </script>
 </head><body><p>Opening the <a href="family-tree-index.html">Johnson Family Tree</a>…</p></body></html>

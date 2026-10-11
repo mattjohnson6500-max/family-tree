@@ -7,7 +7,7 @@
 :root{
   --bg:#f3f5f7; --surface:#ffffff; --fg:#1c2530; --muted:#5d6b7a; --rule:#d5dce3; --link:#9aa6b2;
   --accent:#2f5d8a; --focus-ring:#2f5d8a;
-  --platt:#1f7a72; --lyon:#7a4b86; --johnson:#2f5d8a; --taylor:#a2671c; --ernst:#4d7a2f; --none:#6b7785;
+  --platt:#1f7a72; --lyon:#7a4b86; --johnson:#2f5d8a; --taylor:#a2671c; --ernst:#4d7a2f; --none:#6b7785; --b6:#9a3d4f; --b7:#3d6f9a; --b8:#7a6a2f;
   --display:"Spectral", Georgia, "Times New Roman", serif;
   --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
@@ -15,11 +15,11 @@
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#12171d; --surface:#1b222b; --fg:#e4e9ee; --muted:#97a4b2; --rule:#2e3843; --link:#4a5663;
   --accent:#7fb0e0; --focus-ring:#7fb0e0;
-  --platt:#4fb8ad; --lyon:#b88ac4; --johnson:#7fb0e0; --taylor:#e0a557; --ernst:#93c06c; --none:#97a4b2; color-scheme:dark }}
+  --platt:#4fb8ad; --lyon:#b88ac4; --johnson:#7fb0e0; --taylor:#e0a557; --ernst:#93c06c; --none:#97a4b2; --b6:#e08a9b; --b7:#8fbfe6; --b8:#cdb86a; color-scheme:dark }}
 :root[data-theme="dark"]{
   --bg:#12171d; --surface:#1b222b; --fg:#e4e9ee; --muted:#97a4b2; --rule:#2e3843; --link:#4a5663;
   --accent:#7fb0e0; --focus-ring:#7fb0e0;
-  --platt:#4fb8ad; --lyon:#b88ac4; --johnson:#7fb0e0; --taylor:#e0a557; --ernst:#93c06c; --none:#97a4b2; color-scheme:dark }
+  --platt:#4fb8ad; --lyon:#b88ac4; --johnson:#7fb0e0; --taylor:#e0a557; --ernst:#93c06c; --none:#97a4b2; --b6:#e08a9b; --b7:#8fbfe6; --b8:#cdb86a; color-scheme:dark }
 html,body{height:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;overflow:hidden}
 .app{display:flex;flex-direction:column;height:100%}
@@ -67,7 +67,7 @@ aside li{margin:4px 0}
 .chip{font-size:12.5px;padding:4px 9px;border-radius:999px;background:var(--bg);border:1px solid var(--rule)}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .actions a,.actions button{font-size:13px;text-decoration:none;color:var(--fg);border:1px solid var(--rule);border-radius:6px;padding:6px 10px;background:var(--bg)}
-.actions .primary{background:var(--accent);color:var(--surface);border-color:var(--accent)}
+.actions .primary,dialog .primary{background:var(--accent);color:var(--surface);border-color:var(--accent)}
 .note{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.5}
 .close{display:none}
 .empty{color:var(--muted);line-height:1.6}
@@ -113,11 +113,26 @@ select:disabled{opacity:.45;cursor:not-allowed}
 .chip.c-possible{border-style:dashed}
 .keyrow{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center;margin:12px 0 4px;font-size:12.5px;color:var(--muted)}
 .keyrow .badge{justify-self:start}
+.startbox{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
+#start{max-width:250px}
+.from{font-size:12px;color:var(--muted);margin-top:4px}
+.contrib{border-left:3px solid var(--accent);padding:2px 0 2px 10px;margin:8px 0}
+.contrib .who{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+dialog{border:1px solid var(--rule);border-radius:12px;background:var(--surface);color:var(--fg);max-width:min(520px,calc(100vw - 32px));padding:18px 20px}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+dialog h2{font-family:var(--display);margin:0 0 8px;font-size:20px}
+dialog textarea{box-sizing:border-box;width:100%;min-height:200px;font:13px/1.45 var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--rule);border-radius:8px;padding:10px}
+dialog a.primary{display:inline-block;padding:6px 9px;border-radius:6px;text-decoration:none}
+dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;z-index:20}
 @media (max-width:760px){
   h1{font-size:18px;flex-basis:100%}
   .controls{flex-basis:100%}
   .mil{width:100%}
   #mil,#chs{flex:1 1 200px;min-width:0}
+  #start{flex:1 1 120px;min-width:0;max-width:none}
+  .startbox label{flex-basis:100%}
+  .startbox{width:100%}
   .topics{margin-top:34px}
   .legend{display:none}
   aside{position:absolute;left:0;right:0;bottom:0;width:auto;max-height:62%;border-left:0;border-top:1px solid var(--rule);border-radius:14px 14px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.18);padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
@@ -127,16 +142,28 @@ select:disabled{opacity:.45;cursor:not-allowed}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
+<dialog id="contrib" aria-labelledby="ctitle">
+  <h2 id="ctitle">Share what you know</h2>
+  <p id="cintro"></p>
+  <textarea id="ctext" aria-label="Your note"></textarea>
+  <p class="note" id="cnote"></p>
+  <div class="row"><button type="button" id="ccancel">Close</button><button type="button" id="ccopy" class="primary">Copy note</button><a id="cform" class="primary" target="_blank" rel="noopener" hidden>Open the family form</a></div>
+</dialog>
 <div class="app">
   <header>
     <h1>Johnson Family Tree</h1>
     <div class="controls">
+      <span class="startbox">
+        <label for="start">Start from</label>
+        <select id="start" title="Choose who the tree starts from. Relationships are shown from that person's point of view."></select>
+        <button id="share" type="button" title="Copy a link that opens the tree starting from this person">Copy link</button>
+      </span>
       <label for="q">Find</label>
       <input id="q" type="search" list="names" placeholder="Type a name" autocomplete="off">
       <datalist id="names"></datalist>
       <label for="gens">Generations</label>
       <select id="gens"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option></select>
-      <button id="home" type="button">Back to Matthew</button>
+      <button id="home" type="button">Back to start</button>
       <span class="mil">
         <label for="mil">Military</label>
         <select id="mil" data-g="mil"><option value="">Off</option></select>
@@ -149,13 +176,7 @@ select:disabled{opacity:.45;cursor:not-allowed}
         <button id="chlist" type="button">Pioneer list</button>
       </span>
     </div>
-    <div class="legend" aria-label="Family lines">
-      <span><i style="background:var(--platt)"></i>Platt</span>
-      <span><i style="background:var(--lyon)"></i>Lyon</span>
-      <span><i style="background:var(--johnson)"></i>Johnson</span>
-      <span><i style="background:var(--taylor)"></i>Taylor</span>
-      <span><i style="background:var(--ernst)"></i>Ernst</span>
-    </div>
+    <div class="legend" id="legend" aria-label="Family branches"></div>
   </header>
   <div class="main">
     <div id="canvas">
@@ -173,7 +194,7 @@ select:disabled{opacity:.45;cursor:not-allowed}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
 // Auto-update: when the site has a newer build (version.json), reload to it automatically.
-const BUILD = "20261011175646";
+const BUILD = "20261011181731";
 (function () {
   const KEY = "tree-reload-tried";
   async function check() {
@@ -186,7 +207,8 @@ const BUILD = "20261011175646";
       let tried = null; try { tried = sessionStorage.getItem(KEY); } catch (e) {}
       if (tried === v) return; // already reloaded once for this build; avoid loops while the server catches up
       try { sessionStorage.setItem(KEY, v); } catch (e) {}
-      location.replace(location.pathname + "?v=" + encodeURIComponent(v) + location.hash);
+      const qs = new URLSearchParams(location.search); qs.set("v", v);
+      location.replace(location.pathname + "?" + qs.toString() + location.hash);
     } catch (e) {}
   }
   check();
@@ -199,8 +221,126 @@ const P = Object.fromEntries(DATA.map(p => [p.id, p]));
 const kids = {};
 DATA.forEach(p => [p.f, p.m].forEach(par => { if (par && P[par]) (kids[par] = kids[par] || []).push(p.id); }));
 Object.values(kids).forEach(a => a.sort((x, y) => (P[x].b || 9999) - (P[y].b || 9999)));
-const LINECOL = {Platt:"--platt",Lyon:"--lyon",Johnson:"--johnson",Taylor:"--taylor",Ernst:"--ernst"};
-const lc = p => `var(${LINECOL[p.line] || "--none"})`;
+// Family branches. To add a branch (for example an in-law family someone starts researching),
+// add one entry here (spare colours: --b6, --b7, --b8) and set "line" on that family's people.
+const LINES = [
+  {id: "Platt", col: "--platt", about: "Edith Lyon's mother's family: English, New York and Welsh Latter-day Saint pioneers."},
+  {id: "Lyon", col: "--lyon", about: "Edith Lyon's father's family: the Scottish poet John Lyon and Norwegian emigrants."},
+  {id: "Johnson", col: "--johnson", about: "Dennis Johnson's father's family: Danish emigrants."},
+  {id: "Taylor", col: "--taylor", about: "Dennis Johnson's mother's family: English and Idaho roots."},
+  {id: "Ernst", col: "--ernst", about: "Stephanie Ernst's family, from Hannover, Germany."},
+];
+const LINE = Object.fromEntries(LINES.map(l => [l.id, l]));
+const lc = p => `var(${(LINE[p.line] || {}).col || "--none"})`;
+document.getElementById("legend").innerHTML = LINES.map(l => `<span title="${l.about}"><i style="background:var(${l.col})"></i>${l.id}</span>`).join("");
+
+// ---------- Starting point: everything (relationships, numbers, "back to start") is worked out from here.
+// "family" = Dennis and Edith as a couple; otherwise a person id.
+const COUPLE = ["A2", "A3"];
+// Optional: a Google Form for family contributions. Paste its link here to send people to it.
+const FORM_URL = "";
+const first = id => P[id].name.split(" ")[0];
+const poss = n => n + "'s";
+let startId = "family";
+try {
+  const s = new URLSearchParams(location.search).get("start") || localStorage.getItem("start");
+  if (s && (s === "family" || P[s])) startId = s;
+} catch (e) {}
+const startPerson = () => startId === "family" ? COUPLE[0] : startId;
+const startName = () => startId === "family" ? `${first(COUPLE[0])} & ${first(COUPLE[1])}` : first(startId);
+const ancCache = {};
+function ancMap(id) {
+  if (ancCache[id]) return ancCache[id];
+  const m = new Map([[id, 0]]), q = [id];
+  while (q.length) { const c = q.shift(), d = m.get(c); [P[c].f, P[c].m].forEach(x => { if (x && P[x] && !m.has(x)) { m.set(x, d + 1); q.push(x); } }); }
+  return ancCache[id] = m;
+}
+function blood(s, x) {
+  const A = ancMap(s), B = ancMap(x); let best = null;
+  A.forEach((a, id) => { if (B.has(id)) { const b = B.get(id); if (!best || a + b < best[0] + best[1]) best = [a, b]; } });
+  return best;
+}
+const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ({1: "st", 2: "nd", 3: "rd"}[n % 10] || "th"));
+const gw = (x, m, f, n) => P[x].sex === "M" ? m : P[x].sex === "F" ? f : n;
+const greats = k => k <= 0 ? "" : k === 1 ? "great-" : ord(k) + " great-";
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const TIMES = ["once", "twice", "three times", "four times", "five times"];
+function term(a, b, x, s) {
+  if (a === 0 && b === 0) return "";
+  if (a === 0) return b === 1 ? gw(x, "Son", "Daughter", "Child") : cap(greats(b - 2) + "grand" + gw(x, "son", "daughter", "child"));
+  if (b === 0) return a === 1 ? gw(x, "Father", "Mother", "Parent") : cap(greats(a - 2) + "grand" + gw(x, "father", "mother", "parent"));
+  if (a === 1 && b === 1) {
+    const diff = k => P[x][k] && P[s][k] && P[x][k] !== P[s][k];
+    return diff("f") || diff("m") ? gw(x, "Half-brother", "Half-sister", "Half-sibling") : gw(x, "Brother", "Sister", "Sibling");
+  }
+  if (a === 1) return cap((b === 2 ? "" : greats(b - 3) + "grand") + gw(x, "nephew", "niece", "nephew or niece"));
+  if (b === 1) return cap(greats(a - 2) + gw(x, "uncle", "aunt", "uncle or aunt"));
+  const n = Math.min(a, b) - 1, r = Math.abs(a - b);
+  return `${ord(n)} cousin${r ? " " + (TIMES[r - 1] || r + " times") + " removed" : ""}`;
+}
+const lower = t => t.charAt(0).toLowerCase() + t.slice(1);
+function inLaw(s, x) {
+  if ((P[s].sp || []).includes(x)) return gw(x, "Husband", "Wife", "Spouse");
+  for (const y of (P[x].sp || []).filter(y => P[y])) {
+    const b = blood(s, y); if (!b) continue;
+    if (b[0] === 0 && b[1] === 1) return gw(x, "Son-in-law", "Daughter-in-law", "Child-in-law");
+    if (b[0] === 1 && b[1] === 1) return gw(x, "Brother-in-law", "Sister-in-law", "Sibling-in-law");
+    if (b[0] === 1 && b[1] === 0) return gw(x, "Stepfather", "Stepmother", "Step-parent");
+    if (b[0] === 0 && b[1] === 2) return gw(x, "Grandson-in-law", "Granddaughter-in-law", "Grandchild-in-law");
+    if (b[0] >= 2 && b[1] === 1) return cap(greats(b[0] - 2) + gw(x, "uncle", "aunt", "uncle or aunt")) + " by marriage";
+    return `${poss(first(y))} ${gw(x, "husband", "wife", "spouse")}`;
+  }
+  for (const y of (P[s].sp || []).filter(y => P[y])) {
+    const b = blood(y, x); if (!b) continue;
+    if (b[0] === 1 && b[1] === 0) return gw(x, "Father-in-law", "Mother-in-law", "Parent-in-law");
+    if (b[0] === 1 && b[1] === 1) return gw(x, "Brother-in-law", "Sister-in-law", "Sibling-in-law");
+    if (b[0] === 0 && b[1] === 1) return gw(x, "Stepson", "Stepdaughter", "Stepchild");
+    return `${poss(first(y))} ${lower(term(b[0], b[1], x, y))}`;
+  }
+  return "";
+}
+// family of someone who married into the family, e.g. "Stephanie's father"
+function viaMarriage(s, x) {
+  for (const y of DATA) {
+    if (!(y.sp || []).some(z => P[z] && blood(s, z)) || blood(s, y.id)) continue;
+    const b = blood(y.id, x); if (b && (b[0] || b[1])) return `${poss(first(y.id))} ${lower(term(b[0], b[1], x, y.id))}`;
+  }
+  return "";
+}
+const relCache = {};
+function relOf(x) {
+  const key = startId + "|" + x; if (key in relCache) return relCache[key];
+  let r = "";
+  if (startId === "family") {
+    const [c1, c2] = COUPLE;
+    if (x === c1 || x === c2) r = "Starting couple";
+    else {
+      const b1 = blood(c1, x), b2 = blood(c2, x);
+      if (b1 && b2) r = term(b1[0], b1[1], x, c1);
+      else if (b1) r = `${poss(first(c1))} ${lower(term(b1[0], b1[1], x, c1))}`;
+      else if (b2) r = `${poss(first(c2))} ${lower(term(b2[0], b2[1], x, c2))}`;
+      else r = inLaw(c1, x) || viaMarriage(c1, x);
+    }
+    relCache[key] = r;
+    if (!r) for (const z of (P[x].sp || [])) { if (P[z] && relOf(z)) { r = `${poss(first(z))} ${gw(x, "husband", "wife", "spouse")}`; break; } }
+  } else if (x === startId) r = "Starting person";
+  else {
+    const b = blood(startId, x);
+    r = b ? term(b[0], b[1], x, startId) : (inLaw(startId, x) || viaMarriage(startId, x));
+    relCache[key] = r;
+    if (!r) for (const z of (P[x].sp || [])) { if (P[z] && relOf(z)) { r = `${poss(first(z))} ${gw(x, "husband", "wife", "spouse")}`; break; } }
+  }
+  return relCache[key] = r;
+}
+// Ahnentafel numbers counted from the starting person (1 = that person, father 2n, mother 2n+1).
+let AHN = {};
+function buildAhn() {
+  AHN = {};
+  if (startId === "family") return;
+  const q = [[startId, 1]];
+  while (q.length) { const [id, n] = q.shift(); if (AHN[id]) continue; AHN[id] = n; if (P[id].f && P[P[id].f]) q.push([P[id].f, 2 * n]); if (P[id].m && P[P[id].m]) q.push([P[id].m, 2 * n + 1]); }
+}
+buildAhn();
 const dates = p => {
   const b = p.b || "?";
   if (p.living) return p.b ? `${p.b}–living` : "living";
@@ -282,7 +422,7 @@ function showVets() {
       rows.map(([p, x]) => `<button class="chip c-${x.s}" type="button" data-id="${p.id}" title="${esc(STLABEL[x.s] + ": " + x.n)}">${esc(p.name)} <span class="d">${esc(STLABEL[x.s])}</span></button>`).join("") + `</div></div>`;
   });
   if (!any) h += `<p class="empty">No one found for this ${G.item} yet.</p>`;
-  if (lastMissing.length) h += `<p class="note">Not shown on the tree (no link to Matthew's ancestors yet): ${lastMissing.map(id => esc(P[id].name)).join(", ")}.</p>`;
+  if (lastMissing.length) h += `<p class="note">Not shown on the tree because they are not ancestors of ${esc(startName())} or their relatives: ${lastMissing.map(id => `<button class="chip" type="button" data-start="${id}">${esc(P[id].name)}</button>`).join(" ")} Click a name to start the tree from them instead.</p>`;
   h += `<p class="note">The tree is opened up to show everyone in this list, with the people who connect them faded. Click a name to jump to them; set Military or Pioneer &amp; Church to Off to go back to the normal view.</p>`;
   h += selGroup() === "mil" ? `<p class="note">"Possible" means the man was the right age and in the right country; it is a research target, not a finding. Living relatives are not listed.</p>`
     : `<p class="note">Confirmed entries come from Church records, ship lists, company rosters, obituaries and family histories cited on each person's page. Living relatives are not listed.</p>`;
@@ -293,7 +433,7 @@ function showVets() {
 const dl = document.getElementById("names");
 DATA.slice().sort((a,b)=>a.name.localeCompare(b.name)).forEach(p => { const o = document.createElement("option"); o.value = `${p.name} (${dates(p)})`; dl.appendChild(o); });
 
-let focusId = "A1", selId = null;
+let focusId = startPerson(), selId = null;
 try { const h = location.hash.slice(1); if (P[h]) focusId = h; } catch(e) {}
 
 const svg = d3.select("#svg"), vp = d3.select("#vp");
@@ -348,7 +488,8 @@ function vetLayout() {
     const members = [main, ...extras].sort((a, b) => (P[a].b || 9999) - (P[b].b || 9999));
     return {mains: [main], members};
   };
-  const rootMains = ["A1", ...(P.A1.sp || []).filter(s => P[s] && relevant(s))];
+  const sp0 = startPerson();
+  const rootMains = startId === "family" ? COUPLE.slice() : [sp0, ...(P[sp0].sp || []).filter(s => P[s] && relevant(s))];
   const root = {mains: rootMains, members: rootMains, root: true};
   const kidsOf = g => g.mains.flatMap(m => [P[m].f, P[m].m].filter(x => x && P[x] && relevant(x)).map(mkGroup));
   const hier = d3.hierarchy(root, kidsOf);
@@ -392,7 +533,7 @@ function render(fit = true) {
   g.append("circle").attr("cx", 14).attr("cy", 18).attr("r", 4.5).attr("fill", d => lc(P[d.id]));
   g.append("text").attr("class", "nm").attr("x", 25).attr("y", 22).text(d => trunc(P[d.id].name, P[d.id].tab ? 19 : 24));
   g.append("text").attr("class", "dt").attr("x", 25).attr("y", 40).text(d => dates(P[d.id]));
-  g.filter(d => P[d.id].ahn).append("text").attr("class", "ahn").attr("x", W - 9).attr("y", 40).attr("text-anchor", "end").text(d => "No. " + P[d.id].ahn);
+  g.filter(d => AHN[d.id] > 1).append("text").attr("class", "ahn").attr("x", W - 9).attr("y", 40).attr("text-anchor", "end").text(d => "No. " + AHN[d.id]);
   g.filter(d => P[d.id].tab).append("text").attr("class", "pg").attr("x", W - 9).attr("y", 16).attr("text-anchor", "end").text("PAGE");
   if (milSel) {
     g.classed("dim", d => !milMatches(P[d.id]).length);
@@ -423,9 +564,9 @@ function fitView() {
 const tip = document.getElementById("tip");
 function showTip(e, id) {
   const p = P[id];
-  const body = p.living ? "Living. Details are kept private." : (trunc(p.summary || p.role || "", 260) || "No summary yet. Family members can add what they know.");
+  const body = p.living ? "Living. Details are kept private." : (trunc(p.summary || p.role || "", 260) || "No summary yet. If you know something, open this person and choose Share what you know.");
   const sv = svcOf(p).filter(x => x.s !== "possible");
-  tip.innerHTML = `<b>${esc(p.name)}</b><span class="d">${esc(dates(p))}${p.rel ? " · " + esc(p.rel) : ""}</span>${sv.length ? `<p>★ ${esc(sv.map(x => WAR[x.w].name + (x.s === "lead" ? " (lead)" : "")).join(", "))}</p>` : ""}<p>${esc(body)}</p><div class="hint">Click for details · double-click to center</div>`;
+  tip.innerHTML = `<b>${esc(p.name)}</b><span class="d">${esc(dates(p))}${relOf(id) ? " · " + esc(relOf(id)) : ""}</span>${sv.length ? `<p>★ ${esc(sv.map(x => WAR[x.w].name + (x.s === "lead" ? " (lead)" : "")).join(", "))}</p>` : ""}<p>${esc(body)}</p><div class="hint">Click for details · double-click to center</div>`;
   tip.hidden = false; moveTip(e);
 }
 function moveTip(e) {
@@ -444,8 +585,10 @@ function select(id) {
   selId = id; const p = P[id];
   vp.selectAll(".node").classed("sel", d => d.id === id);
   const sibs = DATA.filter(q => q.id !== id && ((p.f && q.f === p.f) || (p.m && q.m === p.m))).sort((a,b)=>(a.b||9999)-(b.b||9999)).map(q => q.id);
-  let h = topicBlocks(topicIds(p)) + `<h2>${esc(p.name)}</h2><div class="d">${esc(dates(p))}${p.ahn ? " · Ahnentafel no. " + p.ahn : ""}</div>`;
-  if (p.rel) h += `<div class="rel"><i style="background:${lc(p)}"></i>${esc(p.rel)}${p.line ? " · " + esc(p.line) + " line" : ""}</div>`;
+  const rl = relOf(id);
+  let h = topicBlocks(topicIds(p)) + `<h2>${esc(p.name)}</h2><div class="d">${esc(dates(p))}${AHN[id] > 1 ? " · Ahnentafel no. " + AHN[id] : ""}</div>`;
+  if (rl || p.line) h += `<div class="rel"><i style="background:${lc(p)}"></i>${esc(rl)}${rl && p.line ? " · " : ""}${p.line ? `<span title="${esc((LINE[p.line] || {}).about || "")}">${esc(p.line)} line</span>` : ""}</div>`;
+  if (rl && !/^Starting/.test(rl)) h += `<div class="from">Relationship to ${esc(startId === "family" ? startName() : P[startId].name)}, where the tree starts.</div>`;
   if (p.living) {
     h += `<p class="empty">Living. Only the name and birth year are shown here.</p>`;
   } else {
@@ -457,9 +600,12 @@ function select(id) {
     if (p.summary) h += `<h3>Life summary</h3><p>${esc(p.summary)}</p>`;
     if (p.military) h += `<h3>Military service</h3><p>${esc(p.military)}</p>`;
     if (p.notable && p.notable.length) h += `<h3>Notable</h3><ul>${p.notable.map(f => `<li>${esc(f)}</li>`).join("")}</ul>`;
-    if (!p.summary && !p.role && !(p.facts||[]).length) h += `<p class="empty">Nothing researched yet. If you know something about ${esc(p.name.split(" ")[0])}, tell Matt or add it to the family history document.</p>`;
+    if (p.contrib && p.contrib.length) h += `<h3>From the family</h3>` + p.contrib.map(c => `<div class="contrib">${esc(c.t)}<span class="who">Shared by ${esc(c.by)}${c.d ? ", " + esc(c.d) : ""}</span></div>`).join("");
+    if (!p.summary && !p.role && !(p.facts||[]).length && !(p.contrib||[]).length) h += `<p class="empty">Nothing researched yet. If you know something about ${esc(first(id))}, please share it.</p>`;
   }
   h += `<div class="actions">${id !== focusId ? `<button class="primary" type="button" data-focus="${id}">Center tree here</button>` : ""}`;
+  if (id !== startId) h += `<button type="button" data-start="${id}">Start the tree from ${esc(first(id))}</button>`;
+  h += `<button type="button" data-contrib="${id}">Share what you know</button>`;
   if (p.tab) h += `<a href="${p.tab}" target="_blank" rel="noopener">Full page in family doc</a>`;
   if (p.folder) h += `<a href="${p.folder}" target="_blank" rel="noopener">Photos and documents</a>`;
   h += `</div>`;
@@ -472,8 +618,10 @@ pbody.addEventListener("toggle", e => {
   d.open ? openTopics.add(d.dataset.topic) : openTopics.delete(d.dataset.topic);
 }, true);
 pbody.addEventListener("click", e => {
-  const c = e.target.closest("[data-id]"), f = e.target.closest("[data-focus]");
-  if (f) setFocus(f.dataset.focus);
+  const c = e.target.closest("[data-id]"), f = e.target.closest("[data-focus]"), st = e.target.closest("[data-start]"), co = e.target.closest("[data-contrib]");
+  if (st) setStart(st.dataset.start);
+  else if (co) openContrib(co.dataset.contrib);
+  else if (f) setFocus(f.dataset.focus);
   else if (c) setFocus(c.dataset.id);
 });
 document.getElementById("pclose").onclick = () => panel.classList.add("idle");
@@ -492,7 +640,59 @@ function setFocus(id) {
   render(); select(id);
 }
 document.getElementById("gens").onchange = () => render();
-document.getElementById("home").onclick = () => setFocus("A1");
+document.getElementById("home").onclick = () => setFocus(startPerson());
+
+// ---------- Start-from picker
+const startSel = document.getElementById("start");
+function buildStartOptions() {
+  const fam = new Set();
+  const walk = id => (kids[id] || []).forEach(k => { if (!fam.has(k)) { fam.add(k); walk(k); } });
+  COUPLE.forEach(walk);
+  [...fam].forEach(id => (P[id].sp || []).forEach(s => P[s] && fam.add(s)));
+  const people = DATA.filter(p => fam.has(p.id) || p.living || (p.b && p.b >= 1900)).sort((a, b) => a.name.localeCompare(b.name));
+  if (startId !== "family" && !people.some(p => p.id === startId)) people.unshift(P[startId]);
+  startSel.innerHTML = `<option value="family">${esc(first(COUPLE[0]) + " & " + first(COUPLE[1]))}'s family</option>` +
+    `<optgroup label="Or start from a person">` + people.map(p => `<option value="${p.id}">${esc(p.name)}${p.b ? " (" + p.b + ")" : ""}</option>`).join("") + `</optgroup>`;
+  startSel.value = startId;
+}
+function setStart(id) {
+  startId = id;
+  try { localStorage.setItem("start", id); } catch (e) {}
+  try { const qs = new URLSearchParams(location.search); qs.set("start", id); history.replaceState(null, "", location.pathname + "?" + qs.toString() + "#" + startPerson()); } catch (e) {}
+  buildAhn(); buildStartOptions();
+  document.getElementById("home").textContent = "Back to " + startName();
+  setFocus(startPerson());
+}
+startSel.onchange = () => setStart(startSel.value);
+function toast(msg) { const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
+async function copyText(s) {
+  try { await navigator.clipboard.writeText(s); return true; } catch (e) {
+    const ta = document.createElement("textarea"); ta.value = s; document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch (e2) {} ta.remove(); return ok;
+  }
+}
+document.getElementById("share").onclick = async () => {
+  const u = new URL(location.href); u.searchParams.delete("v"); u.searchParams.set("start", startId); u.hash = "";
+  if (!/^https?:$/.test(u.protocol)) u.href = "https://mattjohnson6500-max.github.io/family-tree/?start=" + encodeURIComponent(startId);
+  const ok = await copyText(u.href);
+  toast(ok ? `Link copied. It opens the tree starting from ${startName()}.` : u.href);
+};
+
+// ---------- Share what you know
+const cdlg = document.getElementById("contrib");
+function openContrib(id) {
+  const p = P[id];
+  document.getElementById("cintro").textContent = `Anything helps: dates, places, stories, corrections, or where a photo or document can be found. ${p.living ? "This person is living, so only name and birth year appear on the public tree." : ""}`;
+  document.getElementById("ctext").value = `About: ${p.name} (${dates(p)}) [${p.id}]\n\nWhat I know:\n\n\nHow I know it (memory, a document, a photo, someone told me):\n\n\nMy name (shown as "Shared by"):\n`;
+  const form = document.getElementById("cform");
+  form.hidden = !FORM_URL; if (FORM_URL) form.href = FORM_URL;
+  document.getElementById("cnote").textContent = FORM_URL ? "Fill in the family form, or copy this note and send it to whoever keeps the family history." : "Copy this note and send it (text or email) to whoever keeps the family history. It will be added with your name.";
+  if (cdlg.showModal) cdlg.showModal(); else cdlg.setAttribute("open", "");
+}
+document.getElementById("ccancel").onclick = () => cdlg.close ? cdlg.close() : cdlg.removeAttribute("open");
+document.getElementById("ccopy").onclick = async () => { const ok = await copyText(document.getElementById("ctext").value); toast(ok ? "Note copied" : "Select the text and copy it"); };
+buildStartOptions();
+document.getElementById("home").textContent = "Back to " + startName();
 document.getElementById("q").addEventListener("change", e => {
   const v = e.target.value.trim().toLowerCase(); if (!v) return;
   const hit = DATA.find(p => `${p.name} (${dates(p)})`.toLowerCase() === v) || DATA.find(p => p.name.toLowerCase().includes(v.replace(/\s*\(.*$/, "")));
