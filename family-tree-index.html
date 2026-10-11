@@ -87,6 +87,15 @@ aside li{margin:4px 0}
 .topic .tb p{margin:10px 0 0;font-size:13.5px}
 .topic .tn{color:var(--muted);font-size:12.5px!important}
 .topics{margin-bottom:16px}
+.media-acc{margin-top:18px}
+.media-acc .tb{padding-top:12px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.mitem{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--fg);font-size:12.5px;line-height:1.3}
+.mitem .mthumb{aspect-ratio:4/3;border-radius:6px;border:1px solid var(--rule);background:var(--surface);overflow:hidden;display:grid;place-items:center}
+.mitem .mthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.mitem .mthumb .mk{font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mitem:hover .mthumb{border-color:var(--accent)}
+.mitem .mm{color:var(--muted);font-size:11.5px}
 /* Military filter */
 select:disabled{opacity:.45;cursor:not-allowed}
 .mil{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -214,7 +223,7 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-w
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
 // Auto-update: when the site has a newer build (version.json), reload to it automatically.
-const BUILD = "20261011193135";
+const BUILD = "20261011193752";
 (function () {
   const KEY = "tree-reload-tried";
   async function check() {
@@ -658,9 +667,28 @@ function select(id) {
   h += `</div>`;
   h += relList("Parents", [p.f, p.m]) + relList(p.sp.length > 1 ? "Spouses" : "Spouse", p.sp) + relList("Children", kids[id] || []) + relList("Siblings", sibs);
   if (p.tab || p.folder) h += `<p class="note">The family doc and photo folders open only for relatives they have been shared with.</p>`;
+  h += mediaBlock(p);
   pbody.innerHTML = h; panel.classList.remove("idle"); panel.scrollTop = 0;
 }
+// Media: a person's photos, documents, video and audio, listed in DATA as
+// media: [{t: title, k: "photo"|"document"|"video"|"audio", id: Google Drive file id, u: link (optional; defaults to the Drive file), src: image URL (optional), d: date, by: who shared it}]
+// The section only appears when the person has media. Photos of living people are never listed.
+let mediaOpen = false;
+const MK = {photo: "Photo", document: "Document", video: "Video", audio: "Audio"};
+function mediaBlock(p) {
+  const items = (p.media || []).filter(m => m && (m.u || m.id));
+  if (!items.length || p.living) return "";
+  const card = m => {
+    const href = m.u || `https://drive.google.com/file/d/${encodeURIComponent(m.id)}/view`;
+    const img = m.src || ((m.k || "photo") === "photo" && m.id ? `https://drive.google.com/thumbnail?id=${encodeURIComponent(m.id)}&sz=w400` : "");
+    const kind = MK[m.k] || "File";
+    const meta = [m.d, m.by ? "Shared by " + m.by : ""].filter(Boolean).join(" · ");
+    return `<a class="mitem" href="${esc(href)}" target="_blank" rel="noopener"><span class="mthumb">${img ? `<img src="${esc(img)}" alt="${esc(m.t || kind)}" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'mk',textContent:'${kind}'}))">` : `<span class="mk">${kind}</span>`}</span><span>${esc(m.t || kind)}</span>${meta ? `<span class="mm">${esc(meta)}</span>` : ""}</a>`;
+  };
+  return `<details class="topic media-acc"${mediaOpen ? " open" : ""}><summary><span class="tk">Media</span><span class="tt">Photos and documents <span class="ty">${items.length}</span></span><span class="chev" aria-hidden="true"></span></summary><div class="tb"><div class="mgrid">${items.map(card).join("")}</div><p class="note">Files open in Google Drive. Some may open only for relatives they have been shared with.</p></div></details>`;
+}
 pbody.addEventListener("toggle", e => {
+  const md = e.target.closest && e.target.closest("details.media-acc"); if (md) { mediaOpen = md.open; return; }
   const d = e.target.closest && e.target.closest("details.topic"); if (!d) return;
   d.open ? openTopics.add(d.dataset.topic) : openTopics.delete(d.dataset.topic);
 }, true);
