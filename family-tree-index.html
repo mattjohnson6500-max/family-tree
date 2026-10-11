@@ -214,7 +214,7 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-w
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
 // Auto-update: when the site has a newer build (version.json), reload to it automatically.
-const BUILD = "20261011183305";
+const BUILD = "20261011184424";
 (function () {
   const KEY = "tree-reload-tried";
   async function check() {
@@ -444,6 +444,7 @@ function showVets() {
   });
   if (!any) h += `<p class="empty">No one found for this ${G.item} yet.</p>`;
   if (lastMissing.length) h += `<p class="note">Not shown on the tree because they are not ancestors of ${esc(startName())} or their relatives: ${lastMissing.map(id => `<button class="chip" type="button" data-start="${id}">${esc(P[id].name)}</button>`).join(" ")} Click a name to start the tree from them instead.</p>`;
+  if (vetBase !== startId) h += `<p class="note">To fit everyone in, the tree is drawn from ${esc(vetBase === "family" ? startName() : P[vetBase].name)}'s ancestors. Relationships are still shown from ${esc(startId === "family" ? startName() : P[startId].name)}.</p>`;
   h += `<p class="note">The tree is opened up to show everyone in this list, with the people who connect them faded. Click a name to jump to them; set Military or Pioneer &amp; Church to Off to go back to the normal view.</p>`;
   h += selGroup() === "mil" ? `<p class="note">"Possible" means the man was the right age and in the right country; it is a research target, not a finding. Living relatives are not listed.</p>`
     : `<p class="note">Confirmed entries come from Church records, ship lists, company rosters, obituaries and family histories cited on each person's page. Living relatives are not listed.</p>`;
@@ -494,9 +495,32 @@ function elbow(l) {
 }
 // Veteran view: expand the pedigree just far enough to show every matching person.
 // Siblings of an ancestor (e.g. a great-uncle who served) are stacked in that ancestor's column.
+const sibsOf = id => { const p = P[id]; return DATA.filter(q => q.id !== id && !q.ahn && ((p.f && q.f === p.f) || (p.m && q.m === p.m))).map(q => q.id); };
+// The highlight view is drawn as a pedigree from one "base" (a person, or Dennis & Edith as a couple).
+// Use the starting point when its pedigree reaches everyone selected; otherwise the closest relative whose pedigree reaches the most.
+const baseMains = b => b === "family" ? COUPLE.slice() : [b, ...(P[b].sp || []).filter(s => P[s])];
+function coverage(b, target) {
+  const S = new Set();
+  baseMains(b).forEach(m => ancMap(m).forEach((_, id) => { S.add(id); sibsOf(id).forEach(s => S.add(s)); }));
+  let n = 0; target.forEach(t => { if (S.has(t)) n++; }); return n;
+}
+let vetBase = "family";
+function pickBase(target) {
+  const want = target.size;
+  if (coverage(startId, target) === want) return startId;
+  const sp = startPerson();
+  const dist = id => { if (id === sp) return 0; const b = blood(sp, id); return b ? b[0] + b[1] : 99; };
+  let best = startId, bestN = coverage(startId, target), bestD = 0;
+  DATA.forEach(p => {
+    const n = coverage(p.id, target); if (n < bestN) return;
+    const d = dist(p.id);
+    if (n > bestN || d < bestD) { best = p.id; bestN = n; bestD = d; }
+  });
+  return best;
+}
 function vetLayout() {
   const target = new Set(DATA.filter(p => milMatches(p).length).map(p => p.id));
-  const sibsOf = id => { const p = P[id]; return DATA.filter(q => q.id !== id && !q.ahn && ((p.f && q.f === p.f) || (p.m && q.m === p.m))).map(q => q.id); };
+  vetBase = pickBase(target);
   const memo = {};
   const relevant = id => {
     if (!id || !P[id]) return false;
@@ -509,8 +533,7 @@ function vetLayout() {
     const members = [main, ...extras].sort((a, b) => (P[a].b || 9999) - (P[b].b || 9999));
     return {mains: [main], members};
   };
-  const sp0 = startPerson();
-  const rootMains = startId === "family" ? COUPLE.slice() : [sp0, ...(P[sp0].sp || []).filter(s => P[s] && relevant(s))];
+  const rootMains = vetBase === "family" ? COUPLE.slice() : [vetBase, ...(P[vetBase].sp || []).filter(s => P[s] && relevant(s))];
   const root = {mains: rootMains, members: rootMains, root: true};
   const kidsOf = g => g.mains.flatMap(m => [P[m].f, P[m].m].filter(x => x && P[x] && relevant(x)).map(mkGroup));
   const hier = d3.hierarchy(root, kidsOf);
