@@ -223,7 +223,7 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-w
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
 // Auto-update: when the site has a newer build (version.json), reload to it automatically.
-const BUILD = "20261011195402";
+const BUILD = "20261011200414";
 (function () {
   const KEY = "tree-reload-tried";
   async function check() {
@@ -604,9 +604,9 @@ function render(fit = true) {
   g.on("pointerenter", (e, d) => { if (e.pointerType === "mouse") showTip(e, d.id); })
    .on("pointermove", (e) => { if (e.pointerType === "mouse") moveTip(e); })
    .on("pointerleave", hideTip)
-   .on("click", (e, d) => { hideTip(); select(d.id); })
-   .on("dblclick", (e, d) => { e.stopPropagation(); setFocus(d.id); })
-   .on("keydown", (e, d) => { if (e.key === "Enter") { e.shiftKey ? setFocus(d.id) : select(d.id); } });
+   .on("click", (e, d) => { hideTip(); setFocus(d.id); })
+   .on("dblclick", (e) => { e.stopPropagation(); })
+   .on("keydown", (e, d) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setFocus(d.id); } });
   if (fit) fitView();
 }
 function fitView() {
@@ -621,7 +621,7 @@ function showTip(e, id) {
   const p = P[id];
   const body = p.living ? "Living. Details are kept private." : (trunc(p.summary || p.role || "", 260) || "No summary yet. If you know something, open this person and choose Share what you know.");
   const sv = svcOf(p).filter(x => x.s !== "possible");
-  tip.innerHTML = `<b>${esc(p.name)}</b><span class="d">${esc(dates(p))}${relOf(id) ? " · " + esc(relOf(id)) : ""}</span>${sv.length ? `<p>★ ${esc(sv.map(x => WAR[x.w].name + (x.s === "lead" ? " (lead)" : "")).join(", "))}</p>` : ""}<p>${esc(body)}</p><div class="hint">Click for details · double-click to center</div>`;
+  tip.innerHTML = `<b>${esc(p.name)}</b><span class="d">${esc(dates(p))}${relOf(id) ? " · " + esc(relOf(id)) : ""}</span>${sv.length ? `<p>★ ${esc(sv.map(x => WAR[x.w].name + (x.s === "lead" ? " (lead)" : "")).join(", "))}</p>` : ""}<p>${esc(body)}</p><div class="hint">Click to center here and see details</div>`;
   tip.hidden = false; moveTip(e);
 }
 function moveTip(e) {
@@ -644,6 +644,12 @@ function select(id) {
   let h = topicBlocks(topicIds(p)) + `<h2>${esc(p.name)}</h2><div class="d">${esc(dates(p))}${AHN[id] > 1 ? " · Ahnentafel no. " + AHN[id] : ""}</div>`;
   if (rl || p.line) h += `<div class="rel"><i style="background:${lc(p)}"></i>${esc(rl)}${rl && p.line ? " · " : ""}${p.line ? `<span title="${esc((LINE[p.line] || {}).about || "")}">${esc(p.line)} line</span>` : ""}</div>`;
   if (rl && !/^Starting/.test(rl)) h += `<div class="from">Relationship to ${esc(startId === "family" ? startName() : P[startId].name)}, where the tree starts.</div>`;
+  h += `<div class="actions">${id !== focusId ? `<button class="primary" type="button" data-focus="${id}">Center tree here</button>` : ""}`;
+  if (id !== startId) h += `<button type="button" data-start="${id}">Start the tree from ${esc(first(id))}</button>`;
+  h += `<button type="button" data-contrib="${id}">Share what you know</button><button type="button" data-media="${id}">Share photos or documents</button>`;
+  if (p.tab) h += `<a href="${p.tab}" target="_blank" rel="noopener">Full page in family doc</a>`;
+  if (p.folder) h += `<a href="${p.folder}" target="_blank" rel="noopener">Photos and documents</a>`;
+  h += `</div>`;
   if (p.living) {
     h += `<p class="empty">Living. Only the name and birth year are shown here.</p>`;
   } else {
@@ -659,12 +665,6 @@ function select(id) {
     if (p.q && p.q.length) h += `<h3>Questions we're trying to answer</h3><ul class="pq">${p.q.slice(0, 4).map(x => `<li>${esc(trunc(x, 200))}</li>`).join("")}</ul>${p.q.length > 4 ? `<p class="note">${p.q.length - 4} more in Share what you know.</p>` : ""}`;
     if (!p.summary && !p.role && !(p.facts||[]).length && !(p.contrib||[]).length) h += `<p class="empty">Nothing researched yet. If you know something about ${esc(first(id))}, please share it.</p>`;
   }
-  h += `<div class="actions">${id !== focusId ? `<button class="primary" type="button" data-focus="${id}">Center tree here</button>` : ""}`;
-  if (id !== startId) h += `<button type="button" data-start="${id}">Start the tree from ${esc(first(id))}</button>`;
-  h += `<button type="button" data-contrib="${id}">Share what you know</button><button type="button" data-media="${id}">Share photos or documents</button>`;
-  if (p.tab) h += `<a href="${p.tab}" target="_blank" rel="noopener">Full page in family doc</a>`;
-  if (p.folder) h += `<a href="${p.folder}" target="_blank" rel="noopener">Photos and documents</a>`;
-  h += `</div>`;
   h += relList("Parents", [p.f, p.m]) + relList(p.sp.length > 1 ? "Spouses" : "Spouse", p.sp) + relList("Children", kids[id] || []) + relList("Siblings", sibs);
   if (p.tab || p.folder) h += `<p class="note">The family doc and photo folders open only for relatives they have been shared with.</p>`;
   h += mediaBlock(p);
