@@ -13,8 +13,10 @@
     const r = await fetch("version.json?t=" + Date.now(), {cache: "no-store"});
     if (r.ok) { const v = (await r.json()).build; if (v) qs.set("v", v); }
   } catch (e) {}
-  const s = qs.toString();
-  location.replace("family-tree-index.html" + (s ? "?" + s : "") + location.hash);
+  const s = qs.toString(), target = "family-tree-index.html" + (s ? "?" + s : "");
+  // refresh the browser's saved copy of that version so an out-of-date copy is never shown
+  try { await fetch(target, {cache: "reload"}); } catch (e) {}
+  location.replace(target + location.hash);
 })();
 </script>
 </head><body><p>Opening the <a href="family-tree-index.html">Johnson Family Tree</a>…</p></body></html>

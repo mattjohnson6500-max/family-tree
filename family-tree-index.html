@@ -229,7 +229,7 @@ dialog .row{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;flex-w
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
 // Auto-update: when the site has a newer build (version.json), reload to it automatically.
-const BUILD = "20261011211503";
+const BUILD = "20261011211833";
 (function () {
   const KEY = "tree-reload-tried";
   async function check() {
@@ -239,11 +239,16 @@ const BUILD = "20261011211503";
       if (!r.ok) return;
       const v = String((await r.json()).build || "");
       if (!v || v === BUILD) return;
-      let tried = null; try { tried = sessionStorage.getItem(KEY); } catch (e) {}
-      if (tried === v) return; // already reloaded once for this build; avoid loops while the server catches up
-      try { sessionStorage.setItem(KEY, v); } catch (e) {}
       const qs = new URLSearchParams(location.search); qs.set("v", v);
-      location.replace(location.pathname + "?" + qs.toString() + location.hash);
+      const target = location.pathname + "?" + qs.toString();
+      // Refresh the browser's saved copy of the new page first, and only switch once the server
+      // really serves the new build (GitHub Pages can lag a minute behind version.json).
+      const t = await fetch(target, {cache: "reload"}).then(x => x.ok ? x.text() : "");
+      if (!t.includes('const BUILD = "' + v + '"')) { setTimeout(check, 60 * 1000); return; }
+      let n = 0; try { const s = JSON.parse(sessionStorage.getItem(KEY) || "{}"); n = s.v === v ? s.n : 0; } catch (e) {}
+      if (n >= 3) return; // avoid reload loops
+      try { sessionStorage.setItem(KEY, JSON.stringify({v, n: n + 1})); } catch (e) {}
+      location.replace(target + location.hash);
     } catch (e) {}
   }
   check();
