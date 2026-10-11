@@ -103,7 +103,7 @@ select:disabled{opacity:.45;cursor:not-allowed}
   h1{font-size:18px;flex-basis:100%}
   .controls{flex-basis:100%}
   .mil{width:100%}
-  #mil{flex:1 1 200px;min-width:0}
+  #mil,#chs{flex:1 1 200px;min-width:0}
   .legend{display:none}
   aside{position:absolute;left:0;right:0;bottom:0;width:auto;max-height:62%;border-left:0;border-top:1px solid var(--rule);border-radius:14px 14px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.18);padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
   aside.idle{display:none}
@@ -123,10 +123,15 @@ select:disabled{opacity:.45;cursor:not-allowed}
       <select id="gens"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option></select>
       <button id="home" type="button">Back to Matthew</button>
       <span class="mil">
-        <label for="mil">Highlights</label>
-        <select id="mil"><option value="">Off</option></select>
+        <label for="mil">Military</label>
+        <select id="mil" data-g="mil"><option value="">Off</option></select>
         <label class="tog"><input id="poss" type="checkbox" checked> Include possible</label>
-        <button id="vetlist" type="button">Show list</button>
+        <button id="vetlist" type="button">Veterans list</button>
+      </span>
+      <span class="mil">
+        <label for="chs">Pioneer &amp; Church</label>
+        <select id="chs" data-g="ch"><option value="">Off</option></select>
+        <button id="chlist" type="button">Pioneer list</button>
       </span>
     </div>
     <div class="legend" aria-label="Family lines">
@@ -187,28 +192,31 @@ function milMatches(p) {
   if (!milSel) return [];
   return svcOf(p).filter(x => inSel(x) && (inclPoss || x.s !== "possible"));
 }
-const milSelect = document.getElementById("mil");
-// list only wars with at least one family member who could have been involved (respecting "Include possible")
+const SELECTS = {mil: document.getElementById("mil"), ch: document.getElementById("chs")};
+const milSelect = SELECTS.mil;
+// list only items with at least one family member who could have been involved (respecting "Include possible")
 function warCount(id) { let n = 0; DATA.forEach(p => (p.svc || []).forEach(x => { if (x.w === id && (inclPoss || x.s !== "possible")) n++; })); return n; }
 function buildWarOptions() {
-  [...milSelect.querySelectorAll("optgroup")].forEach(g => g.remove());
-  Object.entries(GROUPS).forEach(([gid, G]) => {
+  Object.entries(SELECTS).forEach(([gid, sel]) => {
+    [...sel.options].slice(1).forEach(o => o.remove());
     const items = WARS.filter(w => w.g === gid).map(w => [w, warCount(w.id)]).filter(([, n]) => n);
     if (!items.length) return;
-    const og = document.createElement("optgroup"); og.label = G.name;
-    const all = document.createElement("option"); all.value = "any:" + gid; all.textContent = G.all; og.appendChild(all);
-    items.forEach(([w, n]) => { const o = document.createElement("option"); o.value = w.id; o.textContent = `${w.name}${w.s != null ? " (" + yrs(w) + ")" : ""} · ${n}`; og.appendChild(o); });
-    milSelect.appendChild(og);
+    const all = document.createElement("option"); all.value = "any:" + gid; all.textContent = GROUPS[gid].all; sel.appendChild(all);
+    items.forEach(([w, n]) => { const o = document.createElement("option"); o.value = w.id; o.textContent = `${w.name}${w.s != null ? " (" + yrs(w) + ")" : ""} · ${n}`; sel.appendChild(o); });
   });
-  if (![...milSelect.options].some(o => o.value === milSel)) milSel = milSel ? "any:" + selGroup() : "";
-  milSelect.value = milSel;
+  const g = milSel ? selGroup() : null;
+  if (g && ![...SELECTS[g].options].some(o => o.value === milSel)) milSel = "any:" + g;
+  syncSelects();
 }
+function syncSelects() { const g = milSel ? selGroup() : null; Object.entries(SELECTS).forEach(([gid, sel]) => { sel.value = gid === g ? milSel : ""; }); }
 document.getElementById("poss").checked = inclPoss;
 buildWarOptions();
 function saveMil() { try { localStorage.setItem("mil", milSel); localStorage.setItem("poss", inclPoss ? "1" : "0"); } catch(e) {} }
-milSelect.onchange = () => { milSel = milSelect.value; saveMil(); render(true); if (milSel) showVets(); };
+Object.values(SELECTS).forEach(sel => sel.onchange = () => { milSel = sel.value; syncSelects(); saveMil(); render(true); if (milSel) showVets(); });
 document.getElementById("poss").onchange = e => { inclPoss = e.target.checked; buildWarOptions(); saveMil(); render(!!milSel); if (milSel) showVets(); };
-document.getElementById("vetlist").onclick = () => { if (!milSel) { milSel = "any:mil"; milSelect.value = milSel; saveMil(); render(true); } showVets(); };
+const openList = gid => { if (!milSel || selGroup() !== gid) { milSel = "any:" + gid; syncSelects(); saveMil(); render(true); } showVets(); };
+document.getElementById("vetlist").onclick = () => openList("mil");
+document.getElementById("chlist").onclick = () => openList("ch");
 function showVets() {
   const G = GROUPS[selGroup()];
   const wars = milSel.startsWith("any:") ? WARS.filter(w => w.g === milSel.slice(4)) : [WAR[milSel]];
@@ -225,7 +233,7 @@ function showVets() {
   });
   if (!any) h += `<p class="empty">No one found for this ${G.item} yet.</p>`;
   if (lastMissing.length) h += `<p class="note">Not shown on the tree (no link to Matthew's ancestors yet): ${lastMissing.map(id => esc(P[id].name)).join(", ")}.</p>`;
-  h += `<p class="note">The tree is opened up to show everyone in this list, with the people who connect them faded. Click a name to jump to them; set Highlights to Off to go back to the normal view.</p>`;
+  h += `<p class="note">The tree is opened up to show everyone in this list, with the people who connect them faded. Click a name to jump to them; set Military or Pioneer &amp; Church to Off to go back to the normal view.</p>`;
   h += selGroup() === "mil" ? `<p class="note">"Possible" means the man was the right age and in the right country; it is a research target, not a finding. Living relatives are not listed.</p>`
     : `<p class="note">Confirmed entries come from Church records, ship lists, company rosters, obituaries and family histories cited on each person's page. Living relatives are not listed.</p>`;
   pbody.innerHTML = h; panel.classList.remove("idle"); panel.scrollTop = 0;
@@ -322,7 +330,7 @@ function render(fit = true) {
   const gens = +document.getElementById("gens").value;
   const L = milSel ? vetLayout() : layout(focusId, gens);
   const {nodes, links} = L; lastMissing = L.missing || [];
-  document.getElementById("gens").disabled = !!milSel; document.getElementById("gens").title = milSel ? "The tree opens as far as needed to show everyone in this highlight" : "";
+  document.getElementById("gens").disabled = !!milSel; document.getElementById("gens").title = milSel ? "The tree opens as far as needed to show everyone selected" : "";
   vp.selectAll("*").remove();
   vp.append("g").selectAll("path").data(links).join("path").attr("class", d => d.k).attr("d", elbow);
   const g = vp.append("g").selectAll("g").data(nodes, d => d.id).join("g")
